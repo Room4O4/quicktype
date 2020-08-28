@@ -402,14 +402,12 @@ export class CSharpRenderer extends ConvenienceRenderer {
 
     protected propertyDefinition(property: ClassProperty, name: Name, _c: ClassType, _jsonName: string): Sourcelike {
         const t = property.type;
-        if (property.defaultValue) {
-            console.log(property.defaultValue);
-        }
         const csType = property.isOptional
             ? this.nullableCSType(t, followTargetType, true)
             : this.csType(t, followTargetType, true);
         if (property.defaultValue) {
-            return ["public ", csType, " ", name, ` { get { return "${property.defaultValue}"; } }`];
+            let defaultValue = typeof property.defaultValue === 'string' ? `"${property.defaultValue}"` : property.defaultValue;
+            return ["public ", csType, " ", name, ` { get { return ${defaultValue}; } }`];
         } else {
             return ["public ", csType, " ", name, ` { get; set; }`];
         }

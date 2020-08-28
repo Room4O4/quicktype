@@ -351,7 +351,12 @@ export class KotlinRenderer extends ConvenienceRenderer {
                     emit();
                 }
 
-                this.emitLine("val ", name, ": ", kotlinType(p), nullableOrOptional ? " = null" : "", last ? "" : ",");
+                if (p.defaultValue) {
+                    let defaultValue = typeof p.defaultValue === 'string' ? `"${p.defaultValue}"` : p.defaultValue;
+                    this.emitLine("val ", name, ": ", kotlinType(p), ` = ${defaultValue}`, last ? "" : ",");
+                } else {
+                    this.emitLine("val ", name, ": ", kotlinType(p), nullableOrOptional ? " = null" : "", last ? "" : ",");
+                }
 
                 if (meta.length > 0 && !last) {
                     this.ensureBlankLine();
