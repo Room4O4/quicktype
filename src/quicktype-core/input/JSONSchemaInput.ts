@@ -119,14 +119,7 @@ function normalizeURI(uri: string | URI): URI {
     if (typeof uri === "string") {
         uri = new URI(uri);
     }
-    return new URI(
-        URI.decode(
-            uri
-                .clone()
-                .normalize()
-                .toString()
-        )
-    );
+    return new URI(URI.decode(uri.clone().normalize().toString()));
 }
 
 export class Ref {
@@ -647,7 +640,7 @@ async function addTypesInSchema(
                 makeNamesTypeAttributes(propName, true)
             );
             const isOptional = !required.has(propName);
-            return typeBuilder.makeClassProperty(t, isOptional);
+            return typeBuilder.makeClassProperty(t, isOptional, propSchema.default);
         });
         let additionalPropertiesType: TypeRef | undefined;
         if (additionalProperties === undefined || additionalProperties === true) {
@@ -1210,12 +1203,7 @@ export class JSONSchemaInput implements Input<JSONSchemaSourceData> {
         } else {
             normalizedURIs = uris.map(uri => {
                 const normalizedURI = normalizeURI(uri);
-                if (
-                    normalizedURI
-                        .clone()
-                        .hash("")
-                        .toString() === ""
-                ) {
+                if (normalizedURI.clone().hash("").toString() === "") {
                     normalizedURI.path(name);
                 }
                 return normalizedURI;

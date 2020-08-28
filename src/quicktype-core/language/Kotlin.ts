@@ -51,7 +51,8 @@ export const kotlinOptions = {
         [["just-types", Framework.None], ["jackson", Framework.Jackson], ["klaxon", Framework.Klaxon], ["kotlinx", Framework.KotlinX]],
         "klaxon"
     ),
-    packageName: new StringOption("package", "Package", "PACKAGE", "quicktype")
+    packageName: new StringOption("package", "Package", "PACKAGE", "quicktype"),
+    baseClass: new StringOption("base-class", "Base Class from which to inherit", "base-class", "")
 };
 
 export class KotlinTargetLanguage extends TargetLanguage {
@@ -60,7 +61,7 @@ export class KotlinTargetLanguage extends TargetLanguage {
     }
 
     protected getOptions(): Option<any>[] {
-        return [kotlinOptions.framework, kotlinOptions.packageName];
+        return [kotlinOptions.framework, kotlinOptions.packageName, kotlinOptions.baseClass];
     }
 
     get supportsOptionalClassProperties(): boolean {
@@ -361,6 +362,9 @@ export class KotlinRenderer extends ConvenienceRenderer {
         });
 
         this.emitClassDefinitionMethods(c, className);
+        if (this._kotlinOptions.baseClass) {
+            this.emitLine(" : ", ` ${this._kotlinOptions.baseClass}()`);
+        }
     }
 
     protected emitClassDefinitionMethods(_c: ClassType, _className: Name) {
@@ -1086,7 +1090,7 @@ export class KotlinXRenderer extends KotlinRenderer {
             this.ensureBlankLine();
             this.emitBlock(["companion object : KSerializer<", enumName, ">"], () => {
                 this.emitBlock("override val descriptor: SerialDescriptor get()", () => {
-                   this.emitLine("return PrimitiveDescriptor(\"", this._kotlinOptions.packageName, ".", enumName, "\", PrimitiveKind.STRING)");
+                    this.emitLine("return PrimitiveDescriptor(\"", this._kotlinOptions.packageName, ".", enumName, "\", PrimitiveKind.STRING)");
                 });
 
                 this.emitBlock(["override fun deserialize(decoder: Decoder): ", enumName, " = when (val value = decoder.decodeString())"], () => {

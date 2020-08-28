@@ -59,9 +59,11 @@ const transformedStringTypeTargetTypeKinds = {
     "bool-string": { jsonSchema: "boolean", primitive: "bool" } as TransformedStringTypeTargets
 };
 
-export const transformedStringTypeTargetTypeKindsMap = mapFromObject(transformedStringTypeTargetTypeKinds as {
-    [kind: string]: TransformedStringTypeTargets;
-});
+export const transformedStringTypeTargetTypeKindsMap = mapFromObject(
+    transformedStringTypeTargetTypeKinds as {
+        [kind: string]: TransformedStringTypeTargets;
+    }
+);
 
 export type TransformedStringTypeKind = keyof typeof transformedStringTypeTargetTypeKinds;
 export type PrimitiveStringTypeKind = "string" | TransformedStringTypeKind;
@@ -401,7 +403,7 @@ export class ArrayType extends Type {
 }
 
 export class GenericClassProperty<T> {
-    constructor(readonly typeData: T, readonly isOptional: boolean) {}
+    constructor(readonly typeData: T, readonly isOptional: boolean, readonly defaultValue: any) {}
 
     equals(other: any): boolean {
         if (!(other instanceof GenericClassProperty)) {
@@ -416,8 +418,8 @@ export class GenericClassProperty<T> {
 }
 
 export class ClassProperty extends GenericClassProperty<TypeRef> {
-    constructor(typeRef: TypeRef, readonly graph: TypeGraph, isOptional: boolean) {
-        super(typeRef, isOptional);
+    constructor(typeRef: TypeRef, readonly graph: TypeGraph, isOptional: boolean, defaultValue?: any) {
+        super(typeRef, isOptional, defaultValue);
     }
 
     get typeRef(): TypeRef {
@@ -551,7 +553,7 @@ export class ObjectType extends Type {
             (maybeAdditionalProperties !== undefined || this._additionalPropertiesRef === undefined)
         ) {
             const properties = mapMap(propertiesInNewOrder, (cp, n) =>
-                builder.makeClassProperty(defined(maybePropertyTypes.get(n)), cp.isOptional)
+                builder.makeClassProperty(defined(maybePropertyTypes.get(n)), cp.isOptional, cp.defaultValue)
             );
 
             switch (this.kind) {
@@ -590,7 +592,7 @@ export class ObjectType extends Type {
 
             const reconstitutedTypes = mapMap(sortedProperties, cp => builder.reconstitute(cp.typeRef));
             const properties = mapMap(propertiesInNewOrder, (cp, n) =>
-                builder.makeClassProperty(defined(reconstitutedTypes.get(n)), cp.isOptional)
+                builder.makeClassProperty(defined(reconstitutedTypes.get(n)), cp.isOptional, cp.defaultValue)
             );
             const additionalProperties = definedMap(this._additionalPropertiesRef, r => builder.reconstitute(r));
             builder.setObjectProperties(properties, additionalProperties);
@@ -642,7 +644,14 @@ export class MapType extends ObjectType {
     readonly kind: "map";
 
     constructor(typeRef: TypeRef, graph: TypeGraph, valuesRef: TypeRef | undefined) {
-        super(typeRef, graph, "map", false, definedMap(valuesRef, () => new Map()), valuesRef);
+        super(
+            typeRef,
+            graph,
+            "map",
+            false,
+            definedMap(valuesRef, () => new Map()),
+            valuesRef
+        );
     }
 
     // FIXME: Remove and use `getAdditionalProperties()` instead.

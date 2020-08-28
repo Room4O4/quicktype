@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Attach by Process ID",
+      "processId": "${command:PickProcess}",
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    },
+    {
       "name": "quicktype",
       "type": "node",
       "request": "launch",
@@ -15,10 +22,12 @@
         "src/cli/tsconfig.json",
         "src/cli/index.ts",
         "--lang",
-        "dart",
-        "--src-lang",
-        "json",
-        "./test/inputs/json/priority/blns-object.json"
+        "csharp",
+        "-s",
+        "schema",
+        "../test_models/album/Album.json",
+        "--base-class",
+        "TDCAFEntity"
       ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector"

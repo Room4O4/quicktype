@@ -26,7 +26,7 @@ export function replaceObjectType(
 
         function reconstituteProperties(): ReadonlyMap<string, ClassProperty> {
             return mapMap(properties, cp =>
-                builder.makeClassProperty(builder.reconstituteTypeRef(cp.typeRef), cp.isOptional)
+                builder.makeClassProperty(builder.reconstituteTypeRef(cp.typeRef), cp.isOptional, cp.defaultValue)
             );
         }
 

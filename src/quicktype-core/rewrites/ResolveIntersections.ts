@@ -143,13 +143,15 @@ class IntersectionAccumulator
             if (existing !== undefined && newProperty !== undefined) {
                 const cp = new GenericClassProperty(
                     existing.typeData.add(newProperty.type),
-                    existing.isOptional && newProperty.isOptional
+                    existing.isOptional && newProperty.isOptional,
+                    existing.defaultValue ? existing.defaultValue : newProperty.defaultValue
                 );
                 defined(this._objectProperties).set(name, cp);
             } else if (existing !== undefined && objectAdditionalProperties !== undefined) {
                 const cp = new GenericClassProperty(
                     existing.typeData.add(objectAdditionalProperties),
-                    existing.isOptional
+                    existing.isOptional,
+                    existing.defaultValue
                 );
                 defined(this._objectProperties).set(name, cp);
             } else if (existing !== undefined) {
@@ -157,7 +159,10 @@ class IntersectionAccumulator
             } else if (newProperty !== undefined && this._additionalPropertyTypes !== undefined) {
                 // FIXME: This is potentially slow
                 const types = new Set(this._additionalPropertyTypes).add(newProperty.type);
-                defined(this._objectProperties).set(name, new GenericClassProperty(types, newProperty.isOptional));
+                defined(this._objectProperties).set(
+                    name,
+                    new GenericClassProperty(types, newProperty.isOptional, newProperty.defaultValue)
+                );
             } else if (newProperty !== undefined) {
                 defined(this._objectProperties).delete(name);
             } else {
@@ -299,7 +304,11 @@ class IntersectionUnionBuilder extends UnionBuilder<
 
         const [propertyTypes, maybeAdditionalProperties] = maybeData;
         const properties = mapMap(propertyTypes, cp =>
-            this.typeBuilder.makeClassProperty(this.makeIntersection(cp.typeData, emptyTypeAttributes), cp.isOptional)
+            this.typeBuilder.makeClassProperty(
+                this.makeIntersection(cp.typeData, emptyTypeAttributes),
+                cp.isOptional,
+                cp.defaultValue
+            )
         );
         const additionalProperties =
             maybeAdditionalProperties === undefined
@@ -343,7 +352,10 @@ export function resolveIntersections(
 
         const accumulator = new IntersectionAccumulator();
         const extraAttributes = makeTypeAttributesInferred(
-            combineTypeAttributes("intersect", Array.from(members).map(t => accumulator.addType(t)))
+            combineTypeAttributes(
+                "intersect",
+                Array.from(members).map(t => accumulator.addType(t))
+            )
         );
         const attributes = combineTypeAttributes("intersect", intersectionAttributes, extraAttributes);
 

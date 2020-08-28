@@ -131,8 +131,8 @@ export class TypeReconstituter<TBuilder extends BaseGraphRewriteBuilder> {
         this.builderForSetting().setArrayItems(this.getResult(), items);
     }
 
-    makeClassProperty(tref: TypeRef, isOptional: boolean): ClassProperty {
-        return this._typeBuilder.makeClassProperty(tref, isOptional);
+    makeClassProperty(tref: TypeRef, isOptional: boolean, defaultValue?: any): ClassProperty {
+        return this._typeBuilder.makeClassProperty(tref, isOptional, defaultValue);
     }
 
     getObjectType(properties: ReadonlyMap<string, ClassProperty>, additionalProperties: TypeRef | undefined): void {
